@@ -1,0 +1,8 @@
+#!/usr/bin/bash
+
+while [[ 1 ]]
+do
+	./run-fio-tests	
+	./build-kernel.sh
+	waitall
+done

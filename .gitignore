@@ -3,6 +3,9 @@
 # fio scratch files
 scratch/*
 
+#kbuild output
+kernel_build.txt
+
 # Object files
 *.o
 *.ko
