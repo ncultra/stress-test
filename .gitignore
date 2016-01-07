@@ -1,5 +1,7 @@
 # emacs backup
 *~
+# fio scratch files
+scratch/*
 
 # Object files
 *.o
