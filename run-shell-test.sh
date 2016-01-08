@@ -7,7 +7,7 @@ CHILDREN=$1
 shift
 while (( $CHILDREN > 0))
 do
-    $($* &>/dev/null ) & 
+    $($*  &>/dev/null) & 
     (( CHILDREN -= 1 ))
 done
 echo "waiting"
