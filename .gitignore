@@ -4,7 +4,11 @@
 scratch/*
 
 #kbuild output
-kernel_build.txt
+
+*build.txt
+builds.json
+over-out.txt
+*kate-swp
 
 # Object files
 *.o
