@@ -12,4 +12,3 @@ do
 done
 echo "waiting"
 wait
-killall $1
