@@ -7,7 +7,7 @@ cat /etc/redhat-release
 cat /var/log/xen-dmsg
 
 xl info
-
+xl list
 lsmod
 
 dmesg
