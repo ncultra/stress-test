@@ -13,3 +13,5 @@ lsmod
 dmesg
 
 ps aux 
+
+rpm -qa
