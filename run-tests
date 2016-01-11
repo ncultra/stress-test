@@ -1,9 +1,11 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 while [[ 1 ]]
 do
-    echo "running fio tests"
-	./run-fio-tests && wait &>/dev/null
+    echo "running stress tests"
+    ./run-shell-test.sh $1 dd if=/dev/urandom | bzip2 &>/dev/null &
+    ./run-shell-test.sh $1 ./eat-cpu.sh
+
 #	./build-kernel.sh 
-	sleep 10
+     wait
 done
