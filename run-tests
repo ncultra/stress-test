@@ -2,6 +2,7 @@
 
 usage() {
     echo "run-tests <options>"
+    echo "        --kill stop running tests"
     echo "        --child=<children> number of child threads to create"
     echo "        --dd  run the dd test"
     echo "        --cpu run the cpu consumer"
@@ -15,7 +16,6 @@ DD=0
 CP=0
 DN=0
 
-
 until [ -z "$1" ]; do
     case  "${1:0:2}" in "--")
 	case "${1:2:2}" in 
@@ -24,11 +24,15 @@ until [ -z "$1" ]; do
 	"cp") CP=1 ; echo "$CP";;
 	"dn") DN=1 ;;
 	"he") usage ;;
+	"ki") echo   kill -9 '$(ps aux | grep eat | awk '{print $2}''  ;
+	    #  killall wget dd  ;
+	      exit 0  ;;
 	*) usage;;
 	esac ;;
     esac
     shift
 done
+
 
 
 run-tests() {
