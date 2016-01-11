@@ -24,8 +24,11 @@ until [ -z "$1" ]; do
 	"cp") CP=1 ; echo "$CP";;
 	"dn") DN=1 ;;
 	"he") usage ;;
-	"ki") echo   kill -9 '$(ps aux | grep eat | awk '{print $2}''  ;
-	    #  killall wget dd  ;
+
+	## this is a gastly hack. It uses an inverted search to filter out ps command itself.
+	## the inverted search is totally reliant on the behavior of ps 
+	"ki") ps aux | grep ./eat-cpu.sh | grep -v color | awk '{print $2}' | xargs kill
+	      killall wget dd  ;
 	      exit 0  ;;
 	*) usage;;
 	esac ;;
@@ -56,3 +59,6 @@ run-tests() {
 
 
 run-tests
+
+
+
