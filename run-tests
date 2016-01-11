@@ -1,11 +1,54 @@
 #!/usr/bin/env bash
 
-while [[ 1 ]]
-do
-    echo "running stress tests"
-    ./run-shell-test.sh $1 dd if=/dev/urandom | bzip2 &>/dev/null &
-    ./run-shell-test.sh $1 ./eat-cpu.sh
+usage() {
+    echo "run-tests <options>"
+    echo "        --child=<children> number of child threads to create"
+    echo "        --dd  run the dd test"
+    echo "        --cpu run the cpu consumer"
+    echo "        --dn wget's the linux kernel from kernel org"
+    echo "        --help for this message"
+    exit 1
+}
 
-#	./build-kernel.sh 
-     wait
+CHILD=0
+DD=0
+CP=0
+DN=0
+
+
+until [ -z "$1" ]; do
+    case  "${1:0:2}" in "--")
+	case "${1:2:2}" in 
+	"ch") CHILD="${1##--ch*=}";;
+	"dd") DD=1 ; echo "$DD";;
+	"cp") CP=1 ; echo "$CP";;
+	"dn") DN=1 ;;
+	"he") usage ;;
+	*) usage;;
+	esac ;;
+    esac
+    shift
 done
+
+
+run-tests() {
+
+    echo "running stress tests"
+
+    if [ $DD -ne 0 ] ; then 
+	./run-shell-test.sh "$CHILD" dd if=/dev/urandom | bzip2 &>/dev/null &
+    fi 
+    if [ $CP -ne 0 ] ; then
+       ./run-shell-test.sh "$CHILD" ./eat-cpu.sh &
+
+    fi
+
+    if [ $DN -ne 0 ] ; then
+       ./run-shell-test.sh "$CHILD" ./dnld-kernel.sh
+    fi 
+    wait
+
+}
+
+
+run-tests
