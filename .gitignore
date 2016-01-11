@@ -42,3 +42,7 @@ over-out.txt
 
 # Debug files
 *.dSYM/
+
+index.html*
+\#*
+.#*
