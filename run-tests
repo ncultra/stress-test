@@ -24,11 +24,8 @@ until [ -z "$1" ]; do
 	"cp") CP=1 ; echo "$CP";;
 	"dn") DN=1 ;;
 	"he") usage ;;
-
-	## this is a gastly hack. It uses an inverted search to filter out ps command itself.
-	## the inverted search is totally reliant on the behavior of ps 
-	"ki") ps aux | grep ./eat-cpu.sh | grep -v color | awk '{print $2}' | xargs kill
-	      killall wget dd  ;
+	"ki") ps aux | grep ./eat-cpu.sh | grep -v "$$" | awk '{print $2}' | xargs kill &>/dev/null
+	      killall wget dd  &>/dev/null;
 	      exit 0  ;;
 	*) usage;;
 	esac ;;
