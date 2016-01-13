@@ -20,7 +20,7 @@ create_minios() {
 
     domfile=$(mktemp "domXXXX") 
     cat<<EOF>$domfile
-kernel = "mini-os.gz"
+kernel = "./scratch/mini-os.gz"
 memory = "32"
 name = "$1"
 EOF
