@@ -15,3 +15,6 @@ dmesg
 ps aux 
 
 rpm -qa
+
+df
+mount
