@@ -13,9 +13,17 @@ echo "you need root privileges"
     exit 1
 fi
 
+destroy_minios() {
+    for el in ${domains[@]} ; do
+	xl destroy $el
+    done
+}
 
 
-#TODO pass the config in as a option
+trap 'destroy_minios; echo "caught a signal, exiting..."; exit 1' TERM INT 
+
+#TODO allow passing the dom configuration as an option to the command"
+
 create_minios() {
 
     domfile=$(mktemp "domXXXX") 
@@ -26,7 +34,6 @@ name = "$1"
 EOF
 
     xl create $domfile
-    cat $domfile
     rm $domfile
 }
 
@@ -35,20 +42,15 @@ INDEX=$2
 
 while [ 1 ] ; do
 
-# create an array of $INDEX random elements
 until (( "${#domains[@]}" == "$INDEX" )); do
     domains=( "${domains[@]}"\
       "$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)")
 done
 
-echo "${#domains[@]}"
     for el in ${domains[@]} ; do
 	create_minios $el
     done
     sleep $1
     
-    for el in ${domains[@]} ; do
-	xl destroy $el
-    done
-   
+    destroy_minios
 done
