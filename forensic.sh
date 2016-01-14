@@ -18,3 +18,7 @@ rpm -qa
 
 df
 mount
+
+w
+
+top -b -n 1 -c
