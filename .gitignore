@@ -9,7 +9,7 @@ scratch/*
 builds.json
 over-out.txt
 *kate-swp
-
+butt
 # Object files
 *.o
 *.ko
@@ -39,10 +39,10 @@ over-out.txt
 *.i*86
 *.x86_64
 *.hex
-
+raxlpxs
 # Debug files
 *.dSYM/
-
+*.exp
 index.html*
 \#*
 .#*
