@@ -15,7 +15,7 @@ fi
 
 destroy_minios() {
     for el in ${domains[@]} ; do
-	xl destroy $el
+        xl destroy $el
     done
 }
 
@@ -26,29 +26,35 @@ trap 'destroy_minios; echo "caught a signal, exiting..."; exit 1' TERM INT
 
 create_minios() {
 
-    domfile=$(mktemp "domXXXX") 
+    domfile=$(mktemp -p $(pwd) "domXXXX") 
     cat<<EOF>$domfile
 kernel = "./scratch/mini-os.gz"
 memory = "32"
 name = "$1"
 EOF
 
-    xl create $domfile
+    xl create -e $domfile
+
     rm $domfile
 }
 
 declare -a domains
 INDEX=$2
 
+ulimit -c unlimited
+ulimit -u unlimited
+export TMPDIR=$(pwd)
+
+
 while [ 1 ] ; do
 
 until (( "${#domains[@]}" == "$INDEX" )); do
     domains=( "${domains[@]}"\
-      "$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)")
+      "$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -c 8)")
 done
 
     for el in ${domains[@]} ; do
-	create_minios $el
+        create_minios $el
     done
     sleep $1
     

@@ -48,7 +48,6 @@ run-tests() {
 	    exit 1
 	fi
 	./domains.sh 1 $CHILD &
-	dom-pid=$!
     fi
     
     if [ $DD -ne 0 ] ; then 
