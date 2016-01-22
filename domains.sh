@@ -15,7 +15,7 @@ fi
 
 destroy_minios() {
     for el in ${domains[@]} ; do
-        xl destroy $el
+        echo "xl destroy $el"
     done
 }
 
@@ -24,18 +24,19 @@ trap 'destroy_minios; echo "caught a signal, exiting..."; exit 1' TERM INT
 
 #TODO allow passing the dom configuration as an option to the command"
 
+#some of the production servers run out of temporary file
+# handles, even when $TMPFIILE points to available storage.
+# It seems that bash HERE documents always use /tmp or a variation of it
 create_minios() {
 
-    domfile=$(mktemp -p $(pwd) "domXXXX") 
-    cat<<EOF>$domfile
-kernel = "./scratch/mini-os.gz"
-memory = "32"
-name = "$1"
-EOF
+   touch $1
+   echo 'kernel = "./scratch/mini-os.gz"' > $1
+   echo 'memory = "32"' >> $1
+   echo name = "$1" >> $1
+   cat $1
+    echo "xl create -e $1"
 
-    xl create -e $domfile
-
-    rm $domfile
+    rm $1
 }
 
 declare -a domains
@@ -44,6 +45,8 @@ INDEX=$2
 ulimit -c unlimited
 ulimit -u unlimited
 export TMPDIR=$(pwd)
+# place core 
+echo $(pwd)/core_%e.%p | tee /proc/sys/kernel/core_pattern 
 
 
 while [ 1 ] ; do
