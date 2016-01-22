@@ -15,7 +15,7 @@ fi
 
 destroy_minios() {
     for el in ${domains[@]} ; do
-        xl destroy $e
+        xl destroy $el
     done
 }
 
