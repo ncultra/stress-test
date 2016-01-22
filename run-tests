@@ -8,6 +8,7 @@ usage() {
     echo "        --cpu run the cpu consumer"
     echo "        --dn wget's the linux kernel from kernel org"
     echo "        --dom thrash domains  REQUIRES ROOT PRIVILEGE"
+    echo "        --sleep=<seconds> sleep period for tests that loop"
     echo "        --help for this message"
     exit 1
 }
@@ -17,6 +18,7 @@ DD=0
 CP=0
 DN=0
 DOM=0
+SLEEP=1
 until [ -z "$1" ]; do
     case  "${1:0:2}" in "--")
 	case "${1:2:2}" in 
@@ -26,6 +28,7 @@ until [ -z "$1" ]; do
 	"dn") DN=1 ;;
 	"he") usage ;;
 	"do") DOM=1 ;;
+	"sl") SLEEP="${1##--sl*=}";;
 	"ki") ps aux | grep "eat-cpu.sh" | grep -v "$$" | awk '{print $2}' | xargs kill &>/dev/null
 	      ps aux | grep "domains.sh" | grep -v "$$" | awk '{print $2}' | xargs kill &>/dev/null
 	      killall wget dd  &>/dev/null;
@@ -47,7 +50,7 @@ run-tests() {
 	    echo "you need root privileges"
 	    exit 1
 	fi
-	./domains.sh 1 $CHILD &
+	./domains.sh $SLEEP  $CHILD &
     fi
     
     if [ $DD -ne 0 ] ; then 
