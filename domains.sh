@@ -15,7 +15,7 @@ fi
 
 destroy_minios() {
     for el in ${domains[@]} ; do
-        echo "xl destroy $el"
+        xl destroy $e
     done
 }
 
@@ -32,9 +32,11 @@ create_minios() {
    touch $1
    echo 'kernel = "./scratch/mini-os.gz"' > $1
    echo 'memory = "32"' >> $1
-   echo name = "$1" >> $1
-   cat $1
-    echo "xl create -e $1"
+   echo -n 'name = "' >> $1
+   echo -n $1 >> $1
+   echo '"' >> $1
+#   cat $1
+   xl create -e $1
 
     rm $1
 }
@@ -44,7 +46,7 @@ INDEX=$2
 
 ulimit -c unlimited
 ulimit -u unlimited
-export TMPDIR=$(pwd)
+
 # place core 
 echo $(pwd)/core_%e.%p | tee /proc/sys/kernel/core_pattern 
 
