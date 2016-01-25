@@ -14,7 +14,7 @@ dmesg
 
 # SAR file can become larger than the expected size of a normal log file.
 # best if sar output is redirected away from partitions that are low on capacity.
-sar -o SAR$PPID 10 > /dev/null 2>&1 &
+sar -o SAR$PPID -i 10 > /dev/null 2>&1 &
 
 ps aux 
 
