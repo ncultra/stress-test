@@ -10,6 +10,8 @@ builds.json
 over-out.txt
 *kate-swp
 butt
+buttHEAD*
+SAR*
 # Object files
 *.o
 *.ko
