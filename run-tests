@@ -9,6 +9,7 @@ usage() {
     echo "        --dn wget's the linux kernel from kernel org"
     echo "        --dom thrash domains  REQUIRES ROOT PRIVILEGE"
     echo "        --sleep=<seconds> sleep period for tests that loop"
+    echo "        --dry print commands but don't execute them"
     echo "        --help for this message"
     exit 1
 }
@@ -19,6 +20,7 @@ CP=0
 DN=0
 DOM=0
 SLEEP=1
+DRY=0
 until [ -z "$1" ]; do
     case  "${1:0:2}" in "--")
 	case "${1:2:2}" in 
@@ -33,6 +35,7 @@ until [ -z "$1" ]; do
 	      ps aux | grep "domains.sh" | grep -v "$$" | awk '{print $2}' | xargs kill &>/dev/null
 	      killall wget dd  &>/dev/null;
 	      exit 0  ;;
+	"dr") DRY=1 ;; 
 	*) usage;;
 	esac ;;
     esac
@@ -50,19 +53,35 @@ run-tests() {
 	    echo "you need root privileges"
 	    exit 1
 	fi
-	./domains.sh $SLEEP  $CHILD &
+	if (( $DRY )); then
+	    echo "./domains.sh $SLEEP $CHILD &"
+	else
+       
+	    ./domains.sh $SLEEP  $CHILD &
+	fi
     fi
     
-    if [ $DD -ne 0 ] ; then 
-	./run-shell-test.sh "$CHILD" dd if=/dev/urandom | bzip2 &>/dev/null &
+    if [ $DD -ne 0 ] ; then
+	if (( $DRY )) ; then
+	    echo "./run-shell-test.sh "$CHILD" dd if=/dev/urandom | bzip2 &>/dev/null &"
+	else
+	    ./run-shell-test.sh "$CHILD" dd if=/dev/urandom | bzip2 &>/dev/null &
+	fi
     fi 
     if [ $CP -ne 0 ] ; then
-       ./run-shell-test.sh "$CHILD" ./eat-cpu.sh &
-
+	if (( DRY )) ; then
+	    echo "./run-shell-test.sh "$CHILD" ./eat-cpu.sh &"
+	else
+	    ./run-shell-test.sh "$CHILD" ./eat-cpu.sh &
+	fi
     fi
 
     if [ $DN -ne 0 ] ; then
-       ./run-shell-test.sh "$CHILD" ./dnld-kernel.sh
+	if (( DRY )) ; then
+	    echo "./run-shell-test.sh "$CHILD" ./dnld-kernel.sh"
+	else
+	    ./run-shell-test.sh "$CHILD" ./dnld-kernel.sh
+	fi
     fi 
     wait
 }
