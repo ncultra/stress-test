@@ -25,8 +25,8 @@ until [ -z "$1" ]; do
     case  "${1:0:2}" in "--")
 	case "${1:2:2}" in 
 	"ch") CHILD="${1##--ch*=}";;
-	"dd") DD=1 ; echo "$DD";;
-	"cp") CP=1 ; echo "$CP";;
+	"dd") DD=1 ;;
+	"cp") CP=1 ;;
 	"dn") DN=1 ;;
 	"he") usage ;;
 	"do") DOM=1 ;;
@@ -48,12 +48,12 @@ run-tests() {
 
     echo "running stress tests"
 
-    if (( $DOM )) ; then
-	if (( $EUID )) ; then
+    if (( DOM )) ; then
+	if (( EUID )) ; then
 	    echo "you need root privileges"
 	    exit 1
 	fi
-	if (( $DRY )); then
+	if (( DRY )); then
 	    echo "./domains.sh $SLEEP $CHILD & (dry run)"
 	else
        
@@ -61,15 +61,15 @@ run-tests() {
 	fi
     fi
     
-    if (( $DD )) ; then
-	if (( $DRY )) ; then
+    if (( DD )) ; then
+	if (( DRY )) ; then
 	    echo "./run-shell-test.sh "$CHILD" dd if=/dev/urandom | bzip2 &>/dev/null & (dry run)"
 	else
 	    ./run-shell-test.sh "$CHILD" dd if=/dev/urandom | bzip2 &>/dev/null &
 	fi
     fi 
-    if (( $CP )) ; then
-	if (( $DRY )) ; then
+    if (( CP )) ; then
+	if (( DRY )) ; then
 	    echo "./run-shell-test.sh "$CHILD" ./eat-cpu.sh & (dry run)"
 	else
 	    ./run-shell-test.sh "$CHILD" ./eat-cpu.sh &
@@ -77,8 +77,8 @@ run-tests() {
     fi
 
     
-    if (( $DN )) ; then
-	if (( $DRY )) ; then
+    if (( DN )) ; then
+	if (( DRY )) ; then
 	    echo "./run-shell-test.sh "$CHILD" ./dnld-kernel.sh (dry run)"
 	else
 	    ./run-shell-test.sh "$CHILD" ./dnld-kernel.sh
