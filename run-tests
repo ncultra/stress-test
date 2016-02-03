@@ -48,37 +48,38 @@ run-tests() {
 
     echo "running stress tests"
 
-    if [ $DOM -ne 0 ] ; then
+    if (( $DOM )) ; then
 	if (( $EUID )) ; then
 	    echo "you need root privileges"
 	    exit 1
 	fi
 	if (( $DRY )); then
-	    echo "./domains.sh $SLEEP $CHILD &"
+	    echo "./domains.sh $SLEEP $CHILD & (dry run)"
 	else
        
 	    ./domains.sh $SLEEP  $CHILD &
 	fi
     fi
     
-    if [ $DD -ne 0 ] ; then
+    if (( $DD )) ; then
 	if (( $DRY )) ; then
-	    echo "./run-shell-test.sh "$CHILD" dd if=/dev/urandom | bzip2 &>/dev/null &"
+	    echo "./run-shell-test.sh "$CHILD" dd if=/dev/urandom | bzip2 &>/dev/null & (dry run)"
 	else
 	    ./run-shell-test.sh "$CHILD" dd if=/dev/urandom | bzip2 &>/dev/null &
 	fi
     fi 
-    if [ $CP -ne 0 ] ; then
-	if (( DRY )) ; then
-	    echo "./run-shell-test.sh "$CHILD" ./eat-cpu.sh &"
+    if (( $CP )) ; then
+	if (( $DRY )) ; then
+	    echo "./run-shell-test.sh "$CHILD" ./eat-cpu.sh & (dry run)"
 	else
 	    ./run-shell-test.sh "$CHILD" ./eat-cpu.sh &
 	fi
     fi
 
-    if [ $DN -ne 0 ] ; then
-	if (( DRY )) ; then
-	    echo "./run-shell-test.sh "$CHILD" ./dnld-kernel.sh"
+    
+    if (( $DN )) ; then
+	if (( $DRY )) ; then
+	    echo "./run-shell-test.sh "$CHILD" ./dnld-kernel.sh (dry run)"
 	else
 	    ./run-shell-test.sh "$CHILD" ./dnld-kernel.sh
 	fi
