@@ -4,10 +4,12 @@ usage() {
     echo "run-tests <options>"
     echo "        --kill stop running tests"
     echo "        --child=<children> number of child threads to create"
+    echo "        --listen start ncat server for i/o tests"
+    echo "        --dcat run dd over netcat (as client or server)"
     echo "        --dd  run the dd test"
     echo "        --cpu run the cpu consumer"
     echo "        --dn wget's the linux kernel from kernel org"
-    echo "        --dom thrash domains  REQUIRES ROOT PRIVILEGE"
+    echo "        --dom thrash domains  REQUIRES ROOT PRIVILEGE (xen only)"
     echo "        --sleep=<seconds> sleep period for tests that loop"
     echo "        --dry print commands but don't execute them"
     echo "        --help for this message"
@@ -15,6 +17,8 @@ usage() {
 }
 
 CHILD=0
+LISTEN=0
+DCAT=0
 DD=0
 CP=0
 DN=0
@@ -25,6 +29,8 @@ until [ -z "$1" ]; do
     case  "${1:0:2}" in "--")
 	case "${1:2:2}" in 
 	"ch") CHILD="${1##--ch*=}";;
+	"li") LISTEN=1 ;;
+	"dc") DCAT=1 ;;
 	"dd") DD=1 ;;
 	"cp") CP=1 ;;
 	"dn") DN=1 ;;

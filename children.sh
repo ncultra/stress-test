@@ -18,8 +18,8 @@ remove_record() {
 }
 
 
-$(ls &>/dev/null) &
-childpid=$!
-record_child_pid $childpid
-sleep 2
-remove_record
+#$(ls &>/dev/null) &
+#childpid=$!
+#record_child_pid $childpid
+#sleep 2
+#remove_record
