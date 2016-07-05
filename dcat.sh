@@ -35,7 +35,7 @@ SERVER=$2
 if   (( $CHILDREN == 0 )) ; then 
 
     echo "starting ncat server on $(hostname) port 31337"
-    sudo ncat -lv --keep-open >/dev/null &
+    sudo ncat -lv -m 1000 --keep-open >/dev/null &
     exit 0
 fi
 
