@@ -25,11 +25,11 @@ int gfp_flag_size = sizeof(flags) / sizeof(gfp_t);
  
 void exhuast_hw_zones(void) 
 {
-	int lflags = 0;
 	void *ret = NULL;
+	int lflags = 100;
 	
 	do {
-		ret = kmalloc_node(0x1000, flags[lflags % 3], node);
+		ret = kmalloc_node(0x1000, flags[lflags++ % 3], node);
 		count++;
 	} while (ret != NULL);
 }
