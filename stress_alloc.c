@@ -37,6 +37,7 @@ void exhuast_hw_zones(void)
 
 static int __init sa_init(void)
 {
+	exhuast_hw_zones();
 	return 0;
 	
 }
