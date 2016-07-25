@@ -22,7 +22,8 @@ MODULE_AUTHOR("Mike Day");
 
 static uint32_t node = 0; /* node id */
 static uint32_t zone = 0; /* 0 dma, 1 dma32, 2 highmem */
-
+static uint32_t leak = 1; /* should leak pages as part of the test */
+ 
 int count = 0;
 
 gfp_t flags[] = {
@@ -49,12 +50,15 @@ int exhuast_hw_zones(void *data)
 {
 	int count = 0;
 	void *ret = NULL;
+	struct page *leaked = NULL;
 	
 	do {
 
-		ret = kzalloc(0x100, flags[count % 3]);
+		leaked = alloc_pages_node(Node, flags[count % 6], 0);
 		
-		if (ret != NULL) {
+			//kzalloc(0x100, flags[count % 3]);
+		
+		if (leaked  != NULL) {
 			alloc_counts[count % 3]++;
 			if (!count % 1000) {
 				printk(KERN_DEBUG "STRESS: stress-alloc alloc counts: %d %d %d\n",
@@ -76,9 +80,9 @@ int exhuast_hw_zones(void *data)
 	
 }
 
-module_param(node, uint32_t, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP0;
+module_param(node, uint32_t, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 module_param(zone, uint32_t, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-
+module_param(leak, uint32_t, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
 
 
