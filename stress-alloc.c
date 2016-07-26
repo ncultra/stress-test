@@ -21,9 +21,17 @@ MODULE_AUTHOR("Mike Day");
 
 
 static uint32_t node = 0; /* node id */
-static uint32_t zone = 0; /* 0 dma, 1 dma32, 2 highmem */
+static uint32_t zone = 0; /* 0 dma, 1 dma32, 2 highmem, 3 all */
 static uint32_t leak = 1; /* should leak pages as part of the test */
- 
+static uint32_t nofail = 0;
+
+
+module_param(node,   int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(zone,   int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(leak,   int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(nofail, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+
+
 int count = 0;
 
 gfp_t flags[] = {
@@ -36,7 +44,22 @@ gfp_t flags[] = {
 	OPT_ZONE_HIGHMEM | GFP_KERNEL | __GFP_NOFAIL	
 };
 
+
+static inline int derive_zone_flags(void) 
+{
+	if (zone < 3 && zone > -1) {
+		if (!nofail)
+			return flags[zone];
+		else
+			return flags[zone + 3];
+	}
+	if (zone == 3) { /* all zones */
+		return 0xffffffffu;
+		
+	}
 	
+	return flags[0];
+}
 
 static uint32_t alloc_counts[6];
 static uint32_t fail_counts[6];
@@ -49,14 +72,20 @@ int should_stop = 0;
 int exhuast_hw_zones(void *data) 
 {
 	int count = 0;
-	void *ret = NULL;
 	struct page *leaked = NULL;
+	uint32_t flag = 0;
+	
 	
 	do {
-
-		leaked = alloc_pages_node(Node, flags[count % 6], 0);
+		flag = derive_zone_flags();
 		
-			//kzalloc(0x100, flags[count % 3]);
+		if (flag == 0xffffffffu) {
+			flag = flags[count % 6];
+		}
+		
+		
+                /* "leak" is the only option now */
+		leaked = alloc_pages_node(node, flag, 0);
 		
 		if (leaked  != NULL) {
 			alloc_counts[count % 3]++;
@@ -79,12 +108,6 @@ int exhuast_hw_zones(void *data)
 	return 0;
 	
 }
-
-module_param(node, uint32_t, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-module_param(zone, uint32_t, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-module_param(leak, uint32_t, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-
-
 
 
 static int __init sa_init(void)
