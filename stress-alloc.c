@@ -100,6 +100,10 @@ int exhuast_hw_zones(void *data)
 				       fail_counts[0], fail_counts[1], fail_counts[2]);
 			}
 		}
+		if (!count % 1000) {
+			printk(KERN_DEBUG "STRESS: zone alloc with flags %lx\n", (long unsigned int) flag);
+		}
+		
 		msleep(100);
 		count++;
 
