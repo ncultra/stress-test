@@ -88,20 +88,22 @@ int exhuast_hw_zones(void *data)
 		leaked = alloc_pages_node(node, flag, 0);
 		
 		if (leaked  != NULL) {
-			alloc_counts[count % 3]++;
+			alloc_counts[count % 6]++;
 			if (!count % 1000) {
-				printk(KERN_DEBUG "STRESS: stress-alloc alloc counts: %d %d %d\n",
-				       alloc_counts[0], alloc_counts[1], alloc_counts[2]);
+				printk(KERN_DEBUG "STRESS: stress-alloc alloc counts: %d %d %d %d %d %d\n",
+				       alloc_counts[0], alloc_counts[1], alloc_counts[2],
+					alloc_counts[3], alloc_counts[4], alloc_counts[5]);
 			}
 		} else {
-			fail_counts[count % 3]++;
+			fail_counts[count % 6]++;
 			if (!count % 1000) {
-				printk(KERN_DEBUG "STRESS: stress-alloc failures: %d %d %d\n",
-				       fail_counts[0], fail_counts[1], fail_counts[2]);
+				printk(KERN_DEBUG "STRESS: stress-alloc failures: %d %d %d %d %d %d\n",
+				       fail_counts[0], fail_counts[1], fail_counts[2],
+				       fail_counts[3], fail_counts[4], fail_counts[5]);
 			}
 		}
 		if (!count % 1000) {
-			printk(KERN_DEBUG "STRESS: zone alloc with flags %lx\n", (long unsigned int) flag);
+			printk(KERN_DEBUG "STRESS: zone alloc with flags 0x%ul\n", flag);
 		}
 		
 		msleep(100);
