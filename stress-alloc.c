@@ -65,6 +65,11 @@ static uint32_t alloc_counts[6];
 static uint32_t fail_counts[6];
 
 int gfp_flag_count = sizeof(flags) / sizeof(flags[0]); 	
+struct page *pptrs[4096 * 4096];
+
+
+
+
 
 struct task_struct *et;
 int should_stop = 0;
