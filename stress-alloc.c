@@ -20,16 +20,18 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Mike Day");
 
 
-static uint32_t node = 0; /* node id */
-static uint32_t zone = 0; /* 0 dma, 1 dma32, 2 highmem, 3 all */
-static uint32_t leak = 1; /* should leak pages as part of the test */
-static uint32_t nofail = 0;
+static int node = 0; /* node id */
+static int zone = 0; /* 0 dma, 1 dma32, 2 highmem, 3 all */
+static int leak = 1; /* should leak pages as part of the test */
+static int nofail = 0;
+static int dry_run = 0;
 
 
-module_param(node,   int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-module_param(zone,   int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-module_param(leak,   int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-module_param(nofail, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(node,    int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(zone,    int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(leak,    int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(nofail,  int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+module_param(dry_run, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
 
 int count = 0;
@@ -65,7 +67,8 @@ static uint32_t alloc_counts[6];
 static uint32_t fail_counts[6];
 
 int gfp_flag_count = sizeof(flags) / sizeof(flags[0]); 	
-struct page *pptrs[4096 * 4096];
+static struct page *pptrs[4096 * 4096 * 64];
+int ppage_count = sizeof(pptrs) / sizeof(pptrs[0]);
 
 
 
@@ -76,7 +79,7 @@ int should_stop = 0;
 
 int exhuast_hw_zones(void *data) 
 {
-	int count = 0;
+	unsigned int count = 0;
 	struct page *leaked = NULL;
 	uint32_t flag = 0;
 	
@@ -93,6 +96,8 @@ int exhuast_hw_zones(void *data)
 		leaked = alloc_pages_node(node, flag, 0);
 		
 		if (leaked  != NULL) {
+			pptrs[count] = leaked;
+			
 			alloc_counts[count % 6]++;
 			if (!count % 1000) {
 				printk(KERN_DEBUG "STRESS: stress-alloc alloc counts: %d %d %d %d %d %d\n",
@@ -125,7 +130,12 @@ static int __init sa_init(void)
 {
 	
 	printk(KERN_DEBUG "STRESS: flags array entry is %d elements\n", gfp_flag_count);
-	et = kthread_run(exhuast_hw_zones, NULL, "stress allocator");
+	if (dry_run) {
+		printk(KERN_DEBUG "cmd line: node %d, zone %d, leak %d, nofail %d\n",
+		       node, zone, leak, nofail);
+	} else {
+		et = kthread_run(exhuast_hw_zones, NULL, "stress allocator");
+	}
 	
 	return 0;
 	
