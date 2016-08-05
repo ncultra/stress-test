@@ -1,3 +1,4 @@
+#define LINUX
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -14,7 +15,6 @@
 #include <linux/sched.h>
 #include <linux/kthread.h>
 #include <linux/delay.h>
-
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Mike Day");
@@ -36,18 +36,18 @@ module_param(dry_run, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
 int count = 0;
 
-gfp_t flags[] = {
+unsigned int  flags[] = {
 	OPT_ZONE_DMA     | GFP_ATOMIC | __GFP_REPEAT,
 	OPT_ZONE_DMA32   | GFP_ATOMIC | __GFP_REPEAT,
 	OPT_ZONE_HIGHMEM | GFP_KERNEL | __GFP_REPEAT,
 
 	OPT_ZONE_DMA     | GFP_ATOMIC | __GFP_NOFAIL,
 	OPT_ZONE_DMA32   | GFP_ATOMIC | __GFP_NOFAIL,
-	OPT_ZONE_HIGHMEM | GFP_KERNEL | __GFP_NOFAIL	
+	OPT_ZONE_HIGHMEM | GFP_KERNEL | __GFP_NOFAIL
 };
 
 
-static inline int derive_zone_flags(void) 
+static inline int derive_zone_flags(void)
 {
 	if (zone < 3 && zone > -1) {
 		if (!nofail)
@@ -56,79 +56,73 @@ static inline int derive_zone_flags(void)
 			return flags[zone + 3];
 	}
 	if (zone == 3) { /* all zones */
-		return 0xffffffffu;
-		
+		return 0xffffffff;
 	}
-	
+
 	return flags[0];
 }
 
 static uint32_t alloc_counts[6];
 static uint32_t fail_counts[6];
 
-int gfp_flag_count = sizeof(flags) / sizeof(flags[0]); 	
-static struct page *pptrs[4096 * 4096 * 64];
+int gfp_flag_count = sizeof(flags) / sizeof(flags[0]);
+static struct page *pptrs[4096];
 int ppage_count = sizeof(pptrs) / sizeof(pptrs[0]);
-
-
-
 
 
 struct task_struct *et;
 int should_stop = 0;
 
-int exhuast_hw_zones(void *data) 
+int exhuast_hw_zones(void *data)
 {
 	unsigned int count = 0;
 	struct page *leaked = NULL;
 	uint32_t flag = 0;
-	
-	
+
+
 	do {
 		flag = derive_zone_flags();
-		
-		if (flag == 0xffffffffu) {
+
+		if (flag == 0xffffffff) {
 			flag = flags[count % 6];
 		}
-		
-		
-                /* "leak" is the only option now */
+
 		leaked = alloc_pages_node(node, flag, 0);
-		
+		/* leaked mode is the only supported mode right now */
 		if (leaked  != NULL) {
-			pptrs[count] = leaked;
-			
+		  pptrs[count] = leaked;
 			alloc_counts[count % 6]++;
-			if (!count % 1000) {
+                       if (!count % 1000) {
 				printk(KERN_DEBUG "STRESS: stress-alloc alloc counts: %d %d %d %d %d %d\n",
 				       alloc_counts[0], alloc_counts[1], alloc_counts[2],
 					alloc_counts[3], alloc_counts[4], alloc_counts[5]);
-			}
+		       }
+
 		} else {
 			fail_counts[count % 6]++;
-			if (!count % 1000) {
+				if (!count % 1000) {
 				printk(KERN_DEBUG "STRESS: stress-alloc failures: %d %d %d %d %d %d\n",
 				       fail_counts[0], fail_counts[1], fail_counts[2],
 				       fail_counts[3], fail_counts[4], fail_counts[5]);
 			}
 		}
+
+
 		if (!count % 1000) {
 			printk(KERN_DEBUG "STRESS: zone alloc with flags 0x%ul\n", flag);
 		}
-		
 		msleep(100);
 		count++;
 
 	} while (!should_stop);
-	
-	return 0;
-	
-}
 
+	return 0;
+
+}
 
 static int __init sa_init(void)
 {
-	
+
 	printk(KERN_DEBUG "STRESS: flags array entry is %d elements\n", gfp_flag_count);
 	if (dry_run) {
 		printk(KERN_DEBUG "cmd line: node %d, zone %d, leak %d, nofail %d\n",
@@ -136,23 +130,20 @@ static int __init sa_init(void)
 	} else {
 		et = kthread_run(exhuast_hw_zones, NULL, "stress allocator");
 	}
-	
+
 	return 0;
-	
+
 }
 
 
 static void __exit sa_exit(void)
 {
 	should_stop = 1;
-	
+
 	printk(KERN_DEBUG "STRESS: stress-alloc alloc counts: %d %d %d\n",
 	       alloc_counts[0], alloc_counts[1], alloc_counts[2]);
 	printk(KERN_DEBUG "STRESS: stress-alloc failures: %d %d %d\n",
 	       fail_counts[0], fail_counts[1], fail_counts[2]);
-
-	printk(KERN_DEBUG "STRESS: kthread ptr %p\n", et);
-	
 
 }
 
@@ -160,12 +151,8 @@ module_init(sa_init);
 module_exit(sa_exit);
 
 /*********************************************
- * TODO: 
- * current flag definitions mix unlike flag values
- * page alloc
- * GFP_NOFAIL 
- * GFP_REPEAT
- *       gen_pool_create/alloc 
+ * TODO:
+ *       gen_pool_create/alloc
  * https://lwn.net/Articles/125842/
  *************************/
 
