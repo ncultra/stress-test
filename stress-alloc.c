@@ -4,6 +4,7 @@
 #include <linux/module.h>
 #include <linux/gfp.h>
 #include <linux/mmzone.h>
+#include <linux/nodemask.h>
 #include <linux/percpu-defs.h>
 #include <linux/memory.h>
 #include <linux/mm.h>
@@ -72,6 +73,55 @@ int ppage_count = sizeof(pptrs) / sizeof(pptrs[0]);
 
 struct task_struct *et;
 int should_stop = 0;
+
+
+void meminfo_node(int nid)
+{
+	int zone_type;
+	unsigned long managed_pages = 0, spanned_pages = 0, present_pages = 0;
+	unsigned long free_pages = 0;
+	
+	pg_data_t *pgdat = NODE_DATA(nid);
+
+	for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
+		managed_pages += pgdat->node_zones[zone_type].managed_pages;
+		spanned_pages += pgdat->node_zones[zone_type].spanned_pages;
+		present_pages += pgdat->node_zones[zone_type].present_pages;
+		free_pages += node_page_state(nid, NR_FREE_PAGES);
+	}
+	printk(KERN_DEBUG "STRESS: node %d free pages %d, managed pages %d",
+	       nid, free_pages, managed_pages);
+	
+}
+
+
+
+void fill_drain_node(int nid) 
+{
+	struct zone *zone;
+
+	for_each_zone(zone)   {
+		if (!populated_zone(zone)) {
+			printk(KERN_DEBUG "STRESS: zone %s is not populated\n",
+			       zone->name);
+			continue;
+		}
+                /*
+		zone_start_pfn
+			zone name, type 
+			managed, spanned, present
+		  zone type (enum zone_type) mmzone.h:274
+		  zone stats: zone.vm_stat[] mmzone.h:529 atomic_long_t
+		NR_PAGES_FREE, NUMA_HIT, NUMA_MISS, NUMA_LOCAL, NUMA_OTHER
+		(FREE / SPANNED) is % of zone allocation
+		alloc pages until hit the low watermark
+		free pages
+		*/
+		
+	}
+	
+}
+
 
 int exhuast_hw_zones(void *data)
 {
