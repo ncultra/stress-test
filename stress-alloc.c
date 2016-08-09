@@ -75,7 +75,7 @@ struct task_struct *et;
 int should_stop = 0;
 
 
-void meminfo_node(int nid)
+void meminfo_zones(int nid)
 {
 	int zone_type;
 	unsigned long managed_pages = 0, spanned_pages = 0, present_pages = 0;
@@ -89,102 +89,43 @@ void meminfo_node(int nid)
 		present_pages += pgdat->node_zones[zone_type].present_pages;
 		free_pages += node_page_state(nid, NR_FREE_PAGES);
 	}
-	printk(KERN_DEBUG "STRESS: node %d free pages %d, managed pages %d",
+	printk(KERN_DEBUG "STRESS: node %d free pages %lu, managed pages %lu",
 	       nid, free_pages, managed_pages);
 	
 }
 
 
 
-void fill_drain_node(int nid) 
+int meminfo_nodes(void *data) 
 {
-	struct zone *zone;
+	int node = first_memory_node;
 
-	for_each_zone(zone)   {
-		if (!populated_zone(zone)) {
-			printk(KERN_DEBUG "STRESS: zone %s is not populated\n",
-			       zone->name);
-			continue;
-		}
-                /*
-		zone_start_pfn
-			zone name, type 
-			managed, spanned, present
-		  zone type (enum zone_type) mmzone.h:274
-		  zone stats: zone.vm_stat[] mmzone.h:529 atomic_long_t
-		NR_PAGES_FREE, NUMA_HIT, NUMA_MISS, NUMA_LOCAL, NUMA_OTHER
-		(FREE / SPANNED) is % of zone allocation
-		alloc pages until hit the low watermark
-		free pages
-		*/
-		
+	for_each_online_node(node) {
+		meminfo_zones(node);
 	}
+	
+	do {
+		msleep(100);
+	} while (!should_stop);
+	return 0;
 	
 }
 
 
-int exhuast_hw_zones(void *data)
-{
-	unsigned int count = 0;
-	struct page *leaked = NULL;
-	uint32_t flag = 0;
-
-
-	do {
-		flag = derive_zone_flags();
-
-		if (flag == 0xffffffff) {
-			flag = flags[count % 6];
-		}
-
-		leaked = alloc_pages_node(node, flag, 0);
-		/* leaked mode is the only supported mode right now */
-		if (leaked  != NULL) {
-		  pptrs[count] = leaked;
-			alloc_counts[count % 6]++;
-                       if (!count % 1000) {
-				printk(KERN_DEBUG "STRESS: stress-alloc alloc counts: %d %d %d %d %d %d\n",
-				       alloc_counts[0], alloc_counts[1], alloc_counts[2],
-					alloc_counts[3], alloc_counts[4], alloc_counts[5]);
-		       }
-
-		} else {
-			fail_counts[count % 6]++;
-				if (!count % 1000) {
-				printk(KERN_DEBUG "STRESS: stress-alloc failures: %d %d %d %d %d %d\n",
-				       fail_counts[0], fail_counts[1], fail_counts[2],
-				       fail_counts[3], fail_counts[4], fail_counts[5]);
-			}
-		}
-
-
-		if (!count % 1000) {
-			printk(KERN_DEBUG "STRESS: zone alloc with flags 0x%ul\n", flag);
-		}
-		msleep(100);
-		count++;
-
-	} while (!should_stop);
-
-	return 0;
-
-}
-
 static int __init sa_init(void)
 {
-
+	
 	printk(KERN_DEBUG "STRESS: flags array entry is %d elements\n", gfp_flag_count);
 	if (dry_run) {
 		printk(KERN_DEBUG "cmd line: node %d, zone %d, leak %d, nofail %d\n",
 		       node, zone, leak, nofail);
 	} else {
-		et = kthread_run(exhuast_hw_zones, NULL, "stress allocator");
+		et = kthread_run(meminfo_nodes, NULL, "stress allocator");
 	}
-
+	
 	return 0;
-
+	
 }
-
 
 static void __exit sa_exit(void)
 {
