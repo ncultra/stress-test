@@ -12,6 +12,8 @@ lsmod
 
 dmesg
 
+/usr/sbin/raxlpxs listj
+
 # SAR file can become larger than the expected size of a normal log file.
 # best if sar output is redirected away from partitions that are low on capacity.
 sar -o SAR$PPID -i 10 > /dev/null 2>&1 &
