@@ -7,16 +7,17 @@
 #
 # to run a host as a server:
 #
-# dcat.sh 0 (from the host's login shell)
+# dcat.sh 0 <ip> <udp | tcp> (from the host's login shell)
 #
 # to start 20 clients that will stress the host:
 #
-# dcat.sh 20 <host ip>
+# dcat.sh 20 <host ip> <udp | tcp>
 #
 # To kill the clients:
 #
 # dcat.sh -1
-
+#
+#
 
 
 kill_children() {
@@ -32,11 +33,14 @@ CHILDREN=$1
 
 # ip address of the ncat listener.
 SERVER=$2
-if   (( $CHILDREN == 0 )) ; then
 
-    echo "starting ncat server on $SERVER::31337"
-    sudo ncat -lv -m 1000 --keep-open $SERVER 31337 >/dev/null &
-    exit 0
+# protocol and block size
+PROT=$3
+echo "$PROT"
+if   (( $CHILDREN == 0 )) ; then
+	echo "starting ncat server on $SERVER::31337"
+	ncat -lv -m 1000 --keep-open $SERVER 31337 >/dev/null &
+	exit 0
 fi
 
 if (( $CHILDREN < 0 )) ; then
@@ -46,7 +50,13 @@ fi
 
 while (( $CHILDREN > 0 ))
 do
-    echo "dd-ncat to $SERVER $CHILDREN"
-    dd bs=64536 if=/dev/urandom | sudo ncat $SERVER 31337 &
+    if (( $PROT = ip )) ; then
+	echo "dd-ncat over ip to $SERVER $CHILDREN"
+	dd bs=64536 if=/dev/urandom | sudo ncat $SERVER 31337 &
+    else
+	echo "dd-ncat over udp to $SERVER $CHILDREN"
+	dd bs=256 if=/dev/urandom | sudo ncat --udp $SERVER 31337 &
+    fi
     (( CHILDREN -= 1 ))
 done
+
