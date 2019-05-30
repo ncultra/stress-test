@@ -36,10 +36,12 @@ SERVER=$2
 
 # protocol and block size
 PROT=$3
+
+COUNT=$4
 echo "$PROT"
 if   (( $CHILDREN == 0 )) ; then
 	echo "starting ncat server on $SERVER::31337"
-	ncat -lv -m 1000 --keep-open $SERVER 31337 >/dev/null &
+	sudo ncat -lv -m 1000 --keep-open $SERVER 31337 &>/dev/null &
 	exit 0
 fi
 
@@ -50,12 +52,12 @@ fi
 
 while (( $CHILDREN > 0 ))
 do
-    if (( $PROT = ip )) ; then
+    if [ $PROT = "ip" ] ; then
 	echo "dd-ncat over ip to $SERVER $CHILDREN"
-	dd bs=64536 if=/dev/urandom | sudo ncat $SERVER 31337 &
+	dd bs=64536 count=$4 if=/dev/urandom 2>/dev/null | sudo ncat $SERVER 31337  &
     else
 	echo "dd-ncat over udp to $SERVER $CHILDREN"
-	dd bs=256 if=/dev/urandom | sudo ncat --udp $SERVER 31337 &
+	dd bs=256 count=$4 if=/dev/urandom 2>/dev/null | sudo ncat --udp $SERVER 31337 &
     fi
     (( CHILDREN -= 1 ))
 done
